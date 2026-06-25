@@ -1,0 +1,57 @@
+-- Users
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL
+);
+
+-- SMTP Credentials
+CREATE TABLE mail_creds (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    host TEXT NOT NULL,
+    port INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+-- Email Templates
+CREATE TABLE mail_templates (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    creds_id INTEGER NOT NULL,
+    template_raw TEXT NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (creds_id)
+        REFERENCES mail_creds(id)
+        ON DELETE CASCADE
+);
+
+-- Email Logs
+CREATE TABLE mail_logs (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    template_id INTEGER NOT NULL,
+    creds_id INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (template_id)
+        REFERENCES mail_templates(id)
+        ON DELETE SET NULL,
+
+    FOREIGN KEY (creds_id)
+        REFERENCES mail_creds(id)
+        ON DELETE SET NULL
+);
