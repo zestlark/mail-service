@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +11,8 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './auth.guard';
 import type { Response } from 'express';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import type { UserPayload } from '../decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -35,7 +36,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  me(@Req() req: any) {
-    return req.user;
+  me(@CurrentUser() user: UserPayload) {
+    return user;
   }
 }
