@@ -1,6 +1,13 @@
-import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { User } from 'src/users/entities/user.entity';
 
-export class CreateAuthDto {
+export class CreateAuthDto implements Omit<User, 'id'> {
   @IsEmail()
   email: string;
 

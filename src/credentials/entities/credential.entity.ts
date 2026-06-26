@@ -14,7 +14,7 @@ export class Credential {
   @Column()
   port: number;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()
