@@ -1,26 +1,142 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { LoginDto } from './dto/login.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
+import { AUTH_CONSTANTS } from './auth.constants';
+import { getCookieOptions } from './auth.utils';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async register(createAuthDto: CreateAuthDto) {
+    const existingUser = await this.userRepo.findOne({
+      where: { email: createAuthDto.email },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(createAuthDto.password, 10);
+
+    const user = this.userRepo.create({
+      ...createAuthDto,
+      password: hashedPassword,
+    });
+
+    const savedUser = await this.userRepo.save(user);
+
+    return {
+      id: savedUser.id,
+      name: savedUser.name,
+      email: savedUser.email,
+    };
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async findUserById(userId: number) {
+    return this.userRepo.findOne({ where: { id: userId } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async getTokens(userId: number, email: string, name: string) {
+    const payload = { sub: userId, email, name };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: (this.configService.get<string>('JWT_ACCESS_EXPIRATION') ||
+          AUTH_CONSTANTS.DEFAULT_ACCESS_EXPIRATION) as any,
+      }),
+      this.jwtService.signAsync(
+        { sub: userId },
+        {
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+          expiresIn: (this.configService.get<string>(
+            'JWT_REFRESH_EXPIRATION',
+          ) || AUTH_CONSTANTS.DEFAULT_REFRESH_EXPIRATION) as any,
+        },
+      ),
+    ]);
+    return { accessToken, refreshToken };
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
+  setCookies(res: Response, accessToken: string, refreshToken: string) {
+    res.cookie(
+      AUTH_CONSTANTS.ACCESS_COOKIE_NAME,
+      accessToken,
+      getCookieOptions('access'),
+    );
+    res.cookie(
+      AUTH_CONSTANTS.REFRESH_COOKIE_NAME,
+      refreshToken,
+      getCookieOptions('refresh'),
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async login(loginDto: LoginDto, response: Response) {
+    const user = await this.userRepo.findOne({
+      where: {
+        email: loginDto.email,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const tokens = await this.getTokens(user.id, user.email, user.name);
+    this.setCookies(response, tokens.accessToken, tokens.refreshToken);
+
+    return {
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    };
+  }
+
+  async logout(response: Response) {
+    response.clearCookie(
+      AUTH_CONSTANTS.ACCESS_COOKIE_NAME,
+      getCookieOptions('access'),
+    );
+    response.clearCookie(
+      AUTH_CONSTANTS.REFRESH_COOKIE_NAME,
+      getCookieOptions('refresh'),
+    );
+    return {
+      message: 'Logout successful',
+    };
   }
 }

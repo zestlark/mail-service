@@ -1,0 +1,9 @@
+export const AUTH_CONSTANTS = {
+  ACCESS_COOKIE_NAME: 'access_token',
+  REFRESH_COOKIE_NAME: 'refresh_token',
+  FALLBACK_SECRET: 'fallbackSecretKey',
+  DEFAULT_ACCESS_EXPIRATION: '15m',
+  DEFAULT_REFRESH_EXPIRATION: '7d',
+  ACCESS_COOKIE_MAX_AGE: 15 * 60 * 1000,          // 15 minutes
+  REFRESH_COOKIE_MAX_AGE: 7 * 24 * 60 * 60 * 1000,  // 7 days
+};
