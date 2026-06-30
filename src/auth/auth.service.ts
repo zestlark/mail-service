@@ -38,14 +38,28 @@ export class AuthService {
     const user = this.userRepo.create({
       ...createAuthDto,
       password: hashedPassword,
+      emailToken: '',
     });
 
     const savedUser = await this.userRepo.save(user);
+
+    const emailToken = await this.jwtService.signAsync(
+      { sub: savedUser.id },
+      {
+        secret: this.configService.get<string>('JWT_EMAIL_SECRET'),
+        expiresIn: (this.configService.get<string>('JWT_EMAIL_EXPIRATION') ||
+          AUTH_CONSTANTS.DEFAULT_EMAIL_EXPIRATION) as unknown as number,
+      },
+    );
+
+    savedUser.emailToken = emailToken;
+    await this.userRepo.save(savedUser);
 
     return {
       id: savedUser.id,
       name: savedUser.name,
       email: savedUser.email,
+      emailToken: savedUser.emailToken,
     };
   }
 
@@ -97,6 +111,7 @@ export class AuthService {
         email: true,
         name: true,
         password: true,
+        emailToken: true,
       },
     });
 
@@ -122,6 +137,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        emailToken: user.emailToken,
       },
     };
   }

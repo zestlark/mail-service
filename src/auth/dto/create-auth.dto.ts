@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 
-export class CreateAuthDto implements Omit<User, 'id'> {
+export class CreateAuthDto implements Omit<User, 'id' | 'emailToken'> {
   @IsEmail()
   email: string;
 
