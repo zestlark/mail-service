@@ -59,7 +59,7 @@ export class AuthService {
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
         expiresIn: (this.configService.get<string>('JWT_ACCESS_EXPIRATION') ||
-          AUTH_CONSTANTS.DEFAULT_ACCESS_EXPIRATION) as any,
+          AUTH_CONSTANTS.DEFAULT_ACCESS_EXPIRATION) as unknown as number,
       }),
       this.jwtService.signAsync(
         { sub: userId },
@@ -67,7 +67,7 @@ export class AuthService {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
           expiresIn: (this.configService.get<string>(
             'JWT_REFRESH_EXPIRATION',
-          ) || AUTH_CONSTANTS.DEFAULT_REFRESH_EXPIRATION) as any,
+          ) || AUTH_CONSTANTS.DEFAULT_REFRESH_EXPIRATION) as unknown as number,
         },
       ),
     ]);
@@ -126,7 +126,7 @@ export class AuthService {
     };
   }
 
-  async logout(response: Response) {
+  logout(response: Response) {
     response.clearCookie(
       AUTH_CONSTANTS.ACCESS_COOKIE_NAME,
       getCookieOptions('access'),

@@ -11,6 +11,12 @@ export class Template {
   @Column({ name: 'creds_id' })
   credsId: number;
 
+  @Column({ name: 'template_subject' })
+  templateSubject: string;
+
   @Column({ name: 'template_raw', type: 'text' })
   templateRaw: string;
+
+  @Column({ name: 'template_variables', type: 'simple-array', nullable: true })
+  templateVariables: string[];
 }

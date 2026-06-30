@@ -26,7 +26,11 @@ export class AuthGuard implements CanActivate {
 
     if (token) {
       try {
-        const payload = await this.jwtService.verifyAsync(token, {
+        const payload = await this.jwtService.verifyAsync<{
+          sub: number;
+          email: string;
+          name: string;
+        }>(token, {
           secret:
             this.configService.get<string>('JWT_ACCESS_SECRET') ||
             AUTH_CONSTANTS.FALLBACK_SECRET,
@@ -38,7 +42,9 @@ export class AuthGuard implements CanActivate {
           name: payload.name,
         };
         return true;
-      } catch (accessError) {}
+      } catch (accessError) {
+        console.error(accessError);
+      }
     }
 
     const refreshToken = request.cookies?.[AUTH_CONSTANTS.REFRESH_COOKIE_NAME];

@@ -4,6 +4,6 @@ export const AUTH_CONSTANTS = {
   FALLBACK_SECRET: 'fallbackSecretKey',
   DEFAULT_ACCESS_EXPIRATION: '15m',
   DEFAULT_REFRESH_EXPIRATION: '7d',
-  ACCESS_COOKIE_MAX_AGE: 15 * 60 * 1000,          // 15 minutes
-  REFRESH_COOKIE_MAX_AGE: 7 * 24 * 60 * 60 * 1000,  // 7 days
+  ACCESS_COOKIE_MAX_AGE: 15 * 60 * 1000, // 15 minutes
+  REFRESH_COOKIE_MAX_AGE: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
