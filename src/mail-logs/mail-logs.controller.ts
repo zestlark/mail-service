@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MailLogsService } from './mail-logs.service';
 import { CreateMailLogDto } from './dto/create-mail-log.dto';
 import { UpdateMailLogDto } from './dto/update-mail-log.dto';

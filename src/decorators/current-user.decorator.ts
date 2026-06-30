@@ -7,6 +7,6 @@ export type UserPayload = Pick<User, 'id' | 'email' | 'name'>;
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): UserPayload => {
     const request = ctx.switchToHttp().getRequest();
-    return request.user;
+    return request?.user;
   },
 );

@@ -32,7 +32,8 @@ import { AUTH_CONSTANTS } from './auth/auth.constants';
       global: true,
       secret: process.env.JWT_ACCESS_SECRET || AUTH_CONSTANTS.FALLBACK_SECRET,
       signOptions: {
-        expiresIn: (process.env.JWT_ACCESS_EXPIRATION || AUTH_CONSTANTS.DEFAULT_ACCESS_EXPIRATION) as any,
+        expiresIn: (process.env.JWT_ACCESS_EXPIRATION ||
+          AUTH_CONSTANTS.DEFAULT_ACCESS_EXPIRATION) as unknown as number,
       },
     }),
     AuthModule,
