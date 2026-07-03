@@ -11,7 +11,7 @@ export class Template {
   @Column({ name: 'creds_id' })
   credsId: number;
 
-  @Column({ name: 'template_subject' })
+  @Column({ name: 'template_subject', default: '' })
   templateSubject: string;
 
   @Column({ name: 'template_raw', type: 'text' })

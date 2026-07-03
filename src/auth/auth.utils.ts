@@ -1,4 +1,4 @@
-import { CookieOptions } from 'express';
+import { CookieOptions, Request } from 'express';
 import { AUTH_CONSTANTS } from './auth.constants';
 
 export const getCookieOptions = (type: 'access' | 'refresh'): CookieOptions => {
@@ -14,3 +14,8 @@ export const getCookieOptions = (type: 'access' | 'refresh'): CookieOptions => {
     maxAge,
   };
 };
+
+export function extractBearerToken(request: Request): string | undefined {
+  const [type, token] = request.headers.authorization?.split(' ') ?? [];
+  return type === 'Bearer' ? token : undefined;
+}
