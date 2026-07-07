@@ -4,12 +4,16 @@ import { UpdateCredentialDto } from './dto/update-credential.dto';
 import { Credential } from './entities/credential.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import { encrypt } from './credentials.helper';
+import { ENV_KEYS } from '../config/env.keys';
 
 @Injectable()
 export class CredentialsService {
   constructor(
     @InjectRepository(Credential)
     private readonly credentialRepo: Repository<Credential>,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createCredentialDto: CreateCredentialDto, userId: number) {
@@ -19,8 +23,13 @@ export class CredentialsService {
     if (isExists) {
       throw new BadRequestException('Credential with this user already exists');
     }
+
+    const key = this.configService.get<string>(ENV_KEYS.SMTP_ENCRYPTION_KEY)!;
+    const encryptedPassword = encrypt(createCredentialDto.password, key);
+
     const credential = this.credentialRepo.create({
       ...createCredentialDto,
+      password: encryptedPassword,
       userId,
     });
     return this.credentialRepo.save(credential);
@@ -43,7 +52,7 @@ export class CredentialsService {
   async update(
     id: number,
     userId: number,
-    updateCredentialDto: UpdateCredentialDto,
+    updateTemplateDto: UpdateCredentialDto,
   ) {
     const isExists = await this.credentialRepo.findOne({
       where: { id, userId },
@@ -51,7 +60,17 @@ export class CredentialsService {
     if (!isExists) {
       throw new BadRequestException('Credential not found');
     }
-    const credential = this.credentialRepo.merge(isExists, updateCredentialDto);
+
+    let encryptedPassword = updateTemplateDto.password;
+    if (encryptedPassword) {
+      const key = this.configService.get<string>(ENV_KEYS.SMTP_ENCRYPTION_KEY)!;
+      encryptedPassword = encrypt(encryptedPassword, key);
+    }
+
+    const credential = this.credentialRepo.merge(isExists, {
+      ...updateTemplateDto,
+      ...(encryptedPassword ? { password: encryptedPassword } : {}),
+    });
     return this.credentialRepo.save(credential);
   }
 
@@ -62,7 +81,7 @@ export class CredentialsService {
     if (!credential) {
       throw new BadRequestException('Credential not found');
     }
-    await this.credentialRepo.delete(credential);
+    await this.credentialRepo.delete(credential.id);
     return { message: 'Credential deleted successfully' };
   }
 }

@@ -7,9 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
-import { AUTH_CONSTANTS } from './auth.constants';
 import { AuthService } from './auth.service';
-import { getCookieOptions, extractBearerToken } from './auth.utils';
+import {
+  getCookieOptions,
+  extractBearerToken,
+  ACCESS_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+} from './auth.utils';
+import { ENV_KEYS } from '../config/env.keys';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -31,9 +36,7 @@ export class AuthGuard implements CanActivate {
           email: string;
           name: string;
         }>(token, {
-          secret:
-            this.configService.get<string>('JWT_ACCESS_SECRET') ||
-            AUTH_CONSTANTS.FALLBACK_SECRET,
+          secret: this.configService.get<string>(ENV_KEYS.JWT_ACCESS_SECRET),
         });
 
         request['user'] = {
@@ -47,7 +50,7 @@ export class AuthGuard implements CanActivate {
       }
     }
 
-    const refreshToken = request.cookies?.[AUTH_CONSTANTS.REFRESH_COOKIE_NAME];
+    const refreshToken = request.cookies?.[REFRESH_COOKIE_NAME];
 
     if (!refreshToken) {
       this.clearAuthCookies(response);
@@ -56,7 +59,7 @@ export class AuthGuard implements CanActivate {
 
     try {
       const refreshPayload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>(ENV_KEYS.JWT_REFRESH_SECRET),
       });
       const userId = refreshPayload.sub;
 
@@ -93,18 +96,18 @@ export class AuthGuard implements CanActivate {
 
   private clearAuthCookies(response: Response) {
     response.clearCookie(
-      AUTH_CONSTANTS.ACCESS_COOKIE_NAME,
-      getCookieOptions('access'),
+      ACCESS_COOKIE_NAME,
+      getCookieOptions('access', this.configService),
     );
     response.clearCookie(
-      AUTH_CONSTANTS.REFRESH_COOKIE_NAME,
-      getCookieOptions('refresh'),
+      REFRESH_COOKIE_NAME,
+      getCookieOptions('refresh', this.configService),
     );
   }
 
   private extractToken(request: Request): string | undefined {
-    if (request.cookies?.[AUTH_CONSTANTS.ACCESS_COOKIE_NAME]) {
-      return request.cookies[AUTH_CONSTANTS.ACCESS_COOKIE_NAME];
+    if (request.cookies?.[ACCESS_COOKIE_NAME]) {
+      return request.cookies[ACCESS_COOKIE_NAME];
     }
     return extractBearerToken(request);
   }

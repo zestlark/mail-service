@@ -41,7 +41,7 @@ export class MailController {
 
   @UseGuards(AuthGuard)
   @Delete('logs/:id')
-  removeLog(@Param('id') id: string) {
-    return this.mailService.removeLog(+id);
+  removeLog(@Param('id') id: string, @CurrentUser() user: UserPayload) {
+    return this.mailService.removeLog(+id, user.id);
   }
 }

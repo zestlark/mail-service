@@ -15,6 +15,7 @@ export class TemplatesService {
     @InjectRepository(Credential)
     private readonly credsRepo: Repository<Credential>,
   ) {}
+
   async create(createTemplateDto: CreateTemplateDto, userId: number) {
     const template = await this.templateRepo.findOne({
       where: { templateSubject: createTemplateDto.templateSubject, userId },
@@ -78,6 +79,11 @@ export class TemplatesService {
       template,
       updateTemplateDto,
     );
+
+    updatedTemplate.templateVariables = extractVariables(
+      updateTemplateDto.templateRaw,
+    );
+
     return await this.templateRepo.save(updatedTemplate);
   }
 

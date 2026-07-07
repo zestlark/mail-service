@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { extractBearerToken } from '../../auth/auth.utils';
+import { ENV_KEYS } from '../../config/env.keys';
 
 @Injectable()
 export class EmailTokenGuard implements CanActivate {
@@ -28,7 +29,7 @@ export class EmailTokenGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync<{ sub: number }>(
         token,
         {
-          secret: this.configService.get<string>('JWT_EMAIL_SECRET'),
+          secret: this.configService.get<string>(ENV_KEYS.JWT_EMAIL_SECRET),
         },
       );
 
@@ -42,5 +43,4 @@ export class EmailTokenGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired email token');
     }
   }
-
 }

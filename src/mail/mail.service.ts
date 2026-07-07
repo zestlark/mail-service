@@ -12,6 +12,9 @@ import { CreateMailLogDto } from './dto/create-mail-log.dto';
 import { UpdateMailLogDto } from './dto/update-mail-log.dto';
 import { SendMailDto } from './dto/send-mail.dto';
 import * as nodemailer from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
+import { decrypt } from '../credentials/credentials.helper';
+import { ENV_KEYS } from '../config/env.keys';
 
 @Injectable()
 export class MailService {
@@ -22,12 +25,12 @@ export class MailService {
     private readonly templateRepo: Repository<Template>,
     @InjectRepository(Credential)
     private readonly credRepo: Repository<Credential>,
+    private readonly configService: ConfigService,
   ) {}
 
   async sendEmail(userId: number, sendMailDto: SendMailDto) {
     const { templateId, to, variables } = sendMailDto;
 
-    // Fetch Template
     const template = await this.templateRepo.findOne({
       where: { id: templateId, userId },
     });
@@ -35,7 +38,6 @@ export class MailService {
       throw new NotFoundException('Template not found');
     }
 
-    // Fetch Credential
     const cred = await this.credRepo.findOne({
       where: { id: template.credsId, userId },
     });
@@ -62,12 +64,16 @@ export class MailService {
     let finalBody = template.templateRaw;
     if (variables) {
       for (const [key, value] of Object.entries(variables)) {
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         finalBody = finalBody.replace(
-          new RegExp(String.raw`{{\s*${key}\s*}}`, 'g'),
+          new RegExp(String.raw`{{\s*${escapedKey}\s*}}`, 'g'),
           value,
         );
       }
     }
+
+    const key = this.configService.get<string>(ENV_KEYS.SMTP_ENCRYPTION_KEY)!;
+    const decryptedPassword = decrypt(cred.password, key);
 
     const transporter = nodemailer.createTransport({
       host: cred.host,
@@ -75,7 +81,7 @@ export class MailService {
       secure: cred.port === 465,
       auth: {
         user: cred.username,
-        pass: cred.password,
+        pass: decryptedPassword,
       },
     });
 
@@ -132,8 +138,12 @@ export class MailService {
     return this.mailLogRepo.findOne({ where: { id } });
   }
 
-  async removeLog(id: number) {
-    await this.mailLogRepo.delete(id);
+  async removeLog(id: number, userId: number) {
+    const log = await this.mailLogRepo.findOne({ where: { id, userId } });
+    if (!log) {
+      throw new NotFoundException('Mail log not found');
+    }
+    await this.mailLogRepo.remove(log);
     return { message: 'Mail log deleted successfully' };
   }
 }
