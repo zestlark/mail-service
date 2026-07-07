@@ -9,12 +9,14 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { extractBearerToken } from '../../auth/auth.utils';
 import { ENV_KEYS } from '../../config/env.keys';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class EmailTokenGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,6 +35,11 @@ export class EmailTokenGuard implements CanActivate {
         },
       );
 
+      const user = await this.authService.findUserById(payload.sub);
+      if (!user || user.emailToken !== token) {
+        throw new UnauthorizedException('Invalid or expired email token');
+      }
+
       request['user'] = {
         sub: payload.sub,
         id: payload.sub,
@@ -44,3 +51,4 @@ export class EmailTokenGuard implements CanActivate {
     }
   }
 }
+
