@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -17,6 +17,7 @@ import { MailLog } from './mail/entities/mail-log.entity';
 import { MailModule } from './mail/mail.module';
 import { validateEnv } from './config/env.validation';
 import { ENV_KEYS } from './config/env.keys';
+import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -52,4 +53,9 @@ import { ENV_KEYS } from './config/env.keys';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
+
