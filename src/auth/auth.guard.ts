@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { AUTH_CONSTANTS } from './auth.constants';
 import { AuthService } from './auth.service';
-import { getCookieOptions } from './auth.utils';
+import { getCookieOptions, extractBearerToken } from './auth.utils';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -106,7 +106,6 @@ export class AuthGuard implements CanActivate {
     if (request.cookies?.[AUTH_CONSTANTS.ACCESS_COOKIE_NAME]) {
       return request.cookies[AUTH_CONSTANTS.ACCESS_COOKIE_NAME];
     }
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    return extractBearerToken(request);
   }
 }

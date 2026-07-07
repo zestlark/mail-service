@@ -5,7 +5,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { MailLogsModule } from './mail-logs/mail-logs.module';
 import { CredentialsModule } from './credentials/credentials.module';
 import { TemplatesModule } from './templates/templates.module';
 import { UsersModule } from './users/users.module';
@@ -13,9 +12,10 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { Credential } from './credentials/entities/credential.entity';
 import { Template } from './templates/entities/template.entity';
-import { MailLog } from './mail-logs/entities/mail-log.entity';
+import { MailLog } from './mail/entities/mail-log.entity';
 
 import { AUTH_CONSTANTS } from './auth/auth.constants';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -40,7 +40,7 @@ import { AUTH_CONSTANTS } from './auth/auth.constants';
     UsersModule,
     TemplatesModule,
     CredentialsModule,
-    MailLogsModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
