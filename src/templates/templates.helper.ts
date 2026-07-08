@@ -4,5 +4,9 @@ export const extractVariables = (template?: string): string[] => {
   }
   const regex = /\{\{\s*(\w+)\s*\}\}/g;
   const matches = template.match(regex);
-  return matches ? matches.map((match) => match.slice(2, -2).trim()) : [];
+  if (matches) {
+    const rawVars = matches.map((match) => match.slice(2, -2).trim());
+    return Array.from(new Set(rawVars));
+  }
+  return [];
 };
