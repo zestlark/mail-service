@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mail Service Tester</title>
+    <style>
+      /* Minimal sane CSS */
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: #f9fafb;
+        padding: 2rem;
+        color: #111827;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+      input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 1px #2563eb;
+      }
+      fieldset {
+        border: 1px solid #d1d5db;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+      }
+      legend {
+        padding: 0 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+      }
+      button {
+        background-color: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        width: 100%;
+        font-size: 1rem;
+      }
+      button:hover {
+        background-color: #1d4ed8;
+      }
+      button:disabled {
+        background-color: #93c5fd;
+        cursor: not-allowed;
+      }
+      #responseArea {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: #f3f4f6;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        font-family: ui-monospace, monospace;
+        font-size: 0.875rem;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Mail Service Tester</h1>
+      <form id="mailForm">
+        <div class="form-group">
+          <label for="token">Bearer Token (Authorization Header)</label>
+          <input
+            type="text"
+            id="token"
+            placeholder="eyJhbGciOiJIUzI1NiIsInR5c..."
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="templateId">Template ID</label>
+          <input type="number" id="templateId" value="1" required />
+        </div>
+
+        <div class="form-group">
+          <label for="toEmail">To Email</label>
+          <input
+            type="email"
+            id="toEmail"
+            value="kanojiyadeepak747@gmail.com"
+            required
+          />
+        </div>
+
+        <fieldset>
+          <legend>Variables</legend>
+          <div class="form-group">
+            <label for="varName">Name</label>
+            <input type="text" id="varName" value="Deepak" required />
+          </div>
+          <div class="form-group">
+            <label for="varLink">Button Link</label>
+            <input
+              type="url"
+              id="varLink"
+              value="https://chatgpt.com/?temporary-chat=true"
+              required
+            />
+          </div>
+        </fieldset>
+
+        <button type="submit" id="submitBtn">Send Email</button>
+      </form>
+
+      <div id="responseArea" class="hidden"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById('mailForm')
+        .addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('submitBtn');
+          const responseArea = document.getElementById('responseArea');
+
+          // UI state loading
+          btn.textContent = 'Sending...';
+          btn.disabled = true;
+          responseArea.classList.add('hidden');
+
+          const token = document.getElementById('token').value;
+
+          // Construct payload matching the required DTO
+          const payload = {
+            templateId: parseInt(
+              document.getElementById('templateId').value,
+              10,
+            ),
+            to: [document.getElementById('toEmail').value],
+            variables: {
+              Name: document.getElementById('varName').value,
+              ButtonLink: document.getElementById('varLink').value,
+            },
+          };
+
+          try {
+            // Ensure your NestJS app is running on port 3000 and has CORS enabled
+            const response = await fetch('http://localhost:3000/mail/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            // Show response
+            responseArea.textContent = JSON.stringify(data, null, 2);
+            responseArea.style.color = response.ok ? '#065f46' : '#991b1b';
+            responseArea.style.backgroundColor = response.ok
+              ? '#d1fae5'
+              : '#fee2e2';
+            responseArea.classList.remove('hidden');
+          } catch (error) {
+            // Handle network errors
+            responseArea.textContent =
+              'Error: ' +
+              error.message +
+              '\n\nMake sure your NestJS server is running and CORS is enabled.';
+            responseArea.style.color = '#991b1b';
+            responseArea.style.backgroundColor = '#fee2e2';
+            responseArea.classList.remove('hidden');
+          } finally {
+            // UI state reset
+            btn.textContent = 'Send Email';
+            btn.disabled = false;
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deepak Kanojiya | Portfolio</title>
+    <!-- Modern Typography from Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --accent-1: #3b82f6;
+        --accent-2: #8b5cf6;
+        --modal-bg: rgba(30, 41, 59, 0.75);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Outfit', sans-serif;
+        background: radial-gradient(
+          circle at top left,
+          #1e1b4b,
+          var(--bg-color)
+        );
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      /* Hero Section */
+      .hero {
+        text-align: center;
+        z-index: 10;
+      }
+
+      .hero-badge {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 999px;
+        color: var(--accent-1);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        font-size: 4.5rem;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #60a5fa, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 500px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.6;
+      }
+
+      .contact-btn {
+        background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        font-size: 1.125rem;
+        font-family: inherit;
+        font-weight: 600;
+        border-radius: 9999px;
+        cursor: pointer;
+        box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.5);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .contact-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.7);
+      }
+
+      /* Abstract Background Elements */
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 1;
+        opacity: 0.5;
+      }
+      .blob-1 {
+        top: -10%;
+        left: -10%;
+        width: 400px;
+        height: 400px;
+        background: #3b82f6;
+      }
+      .blob-2 {
+        bottom: -10%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: #8b5cf6;
+      }
+
+      /* Glassmorphism Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal-content {
+        background: var(--modal-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border-radius: 20px;
+        padding: 2.5rem;
+        width: 90%;
+        max-width: 450px;
+        position: relative;
+        transform: scale(0.95) translateY(20px);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: scale(1) translateY(0);
+      }
+
+      .modal-content h2 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: white;
+      }
+
+      .modal-content p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+      }
+
+      /* Floating Label Inputs */
+      .input-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+      }
+
+      .input-group input,
+      .input-group textarea {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 1.25rem 1rem 0.5rem;
+        color: white;
+        font-family: inherit;
+        font-size: 1rem;
+        transition:
+          border-color 0.3s ease,
+          box-shadow 0.3s ease;
+        outline: none;
+      }
+
+      .input-group textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+
+      .input-group input:focus,
+      .input-group textarea:focus {
+        border-color: var(--accent-1);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      }
+
+      .input-group label {
+        position: absolute;
+        left: 1rem;
+        top: 1rem;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: 0.2s ease all;
+        font-size: 1rem;
+      }
+
+      .input-group input:focus ~ label,
+      .input-group input:not(:placeholder-shown) ~ label,
+      .input-group textarea:focus ~ label,
+      .input-group textarea:not(:placeholder-shown) ~ label {
+        top: 0.3rem;
+        font-size: 0.75rem;
+        color: var(--accent-1);
+      }
+
+      .submit-btn {
+        background: white;
+        color: var(--bg-color);
+        border: none;
+        width: 100%;
+        padding: 1rem;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          background 0.3s ease,
+          transform 0.2s ease;
+      }
+
+      .submit-btn:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+      }
+
+      .submit-btn:disabled {
+        background: #cbd5e1;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      #formFeedback {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        text-align: center;
+        display: none;
+      }
+
+      #formFeedback.success {
+        display: block;
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      #formFeedback.error {
+        display: block;
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Accents -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <main class="hero">
+      <div class="hero-badge">Available for Work</div>
+      <h1>Creative Developer</h1>
+      <p>
+        Building secure, scalable, and visually stunning digital experiences.
+        Specialized in NestJS and modern web technologies.
+      </p>
+      <button class="contact-btn" id="openModalBtn">Get in Touch</button>
+    </main>
+
+    <!-- Glassmorphism Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+      <div class="modal-content">
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+        <h2>Let's Talk</h2>
+        <p>Send me a message and I'll get back to you shortly.</p>
+
+        <form id="contactForm">
+          <div class="input-group">
+            <input type="text" id="name" required placeholder=" " />
+            <label for="name">Your Name</label>
+          </div>
+          <div class="input-group">
+            <input type="email" id="contact" required placeholder=" " />
+            <label for="contact">Your Email</label>
+          </div>
+          <div class="input-group">
+            <textarea id="message" required placeholder=" "></textarea>
+            <label for="message">Your Message</label>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitBtn">
+            Send Message
+          </button>
+        </form>
+
+        <div id="formFeedback"></div>
+      </div>
+    </div>
+
+    <script>
+      // ==========================================
+      // CONFIGURATION
+      // ==========================================
+      const HARDCODED_TOKEN = 'TOKEN_HARDCODED';
+
+      const TARGET_EMAIL = 'kanojiyadeepak747@gmail.com';
+      // ==========================================
+
+      const modal = document.getElementById('contactModal');
+      const openBtn = document.getElementById('openModalBtn');
+      const closeBtn = document.getElementById('closeModalBtn');
+      const contactForm = document.getElementById('contactForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const formFeedback = document.getElementById('formFeedback');
+
+      // Modal Toggles
+      const openModal = () => modal.classList.add('active');
+      const closeModal = () => {
+        modal.classList.remove('active');
+        // Reset form on close
+        setTimeout(() => {
+          contactForm.reset();
+          formFeedback.className = '';
+          formFeedback.style.display = 'none';
+        }, 400);
+      };
+
+      openBtn.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const contactInfo = document.getElementById('contact').value;
+        const message = document.getElementById('message').value;
+
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+        formFeedback.className = '';
+
+        const payload = {
+          templateId: 2,
+          to: [TARGET_EMAIL],
+          variables: {
+            name: name,
+            email: contactInfo,
+            message: message,
+          },
+        };
+
+        try {
+          const response = await fetch('http://localhost:3000/mail/send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${HARDCODED_TOKEN}`,
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            const userPayload = {
+              templateId: 3,
+              to: [contactInfo],
+              variables: {
+                name: name,
+                email: contactInfo,
+                message: message,
+                company_name: 'Portfolio',
+                year: new Date().getFullYear(),
+              },
+            };
+            await fetch('http://localhost:3000/mail/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${HARDCODED_TOKEN}`,
+              },
+              body: JSON.stringify(userPayload),
+            });
+
+            formFeedback.textContent = 'Message sent successfully!';
+            formFeedback.className = 'success';
+            contactForm.reset();
+          } else {
+            formFeedback.textContent =
+              data.message || 'Failed to send message.';
+            formFeedback.className = 'error';
+          }
+        } catch (error) {
+          formFeedback.textContent =
+            'Network Error: Make sure the Mail Service is running.';
+          formFeedback.className = 'error';
+        } finally {
+          submitBtn.textContent = 'Send Message';
+          submitBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
