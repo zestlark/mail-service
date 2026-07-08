@@ -52,4 +52,3 @@ describe('MailService', () => {
     expect(service).toBeDefined();
   });
 });
-

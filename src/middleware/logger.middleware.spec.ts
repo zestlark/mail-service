@@ -32,12 +32,17 @@ describe('LoggerMiddleware', () => {
 
     const mockNext = jest.fn();
 
-    const loggerSpy = jest.spyOn((middleware as any).logger, 'log').mockImplementation();
+    const loggerSpy = jest
+      .spyOn((middleware as any).logger, 'log')
+      .mockImplementation();
 
     middleware.use(mockRequest, mockResponse, mockNext);
 
     expect(mockNext).toHaveBeenCalled();
-    expect(mockResponse.on).toHaveBeenCalledWith('finish', expect.any(Function));
+    expect(mockResponse.on).toHaveBeenCalledWith(
+      'finish',
+      expect.any(Function),
+    );
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringContaining('GET /test 200 100B - mock-agent 127.0.0.1'),
     );

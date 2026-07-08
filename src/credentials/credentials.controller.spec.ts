@@ -37,4 +37,3 @@ describe('CredentialsController', () => {
     expect(controller).toBeDefined();
   });
 });
-

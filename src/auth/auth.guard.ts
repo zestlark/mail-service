@@ -63,7 +63,7 @@ export class AuthGuard implements CanActivate {
       });
       const userId = refreshPayload.sub;
 
-      const user = await this.authService.findUserById(userId);
+      const user = await this.authService.findUserById(Number(userId));
       if (!user) {
         this.clearAuthCookies(response);
         throw new UnauthorizedException('User not found');
@@ -88,7 +88,7 @@ export class AuthGuard implements CanActivate {
       };
 
       return true;
-    } catch (refreshError) {
+    } catch {
       this.clearAuthCookies(response);
       throw new UnauthorizedException('Session expired, please log in again.');
     }

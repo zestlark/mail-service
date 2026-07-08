@@ -9,6 +9,6 @@ import { Credential } from '../credentials/entities/credential.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([MailLog, Template, Credential])],
   controllers: [MailController],
-  providers: [MailService]
+  providers: [MailService],
 })
 export class MailModule {}

@@ -34,7 +34,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>(ENV_KEYS.JWT_ACCESS_SECRET),
         signOptions: {
           expiresIn: configService.get<string>(
@@ -58,4 +58,3 @@ export class AppModule implements NestModule {
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }
-
