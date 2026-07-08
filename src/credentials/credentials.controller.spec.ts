@@ -4,6 +4,7 @@ import { CredentialsController } from './credentials.controller';
 import { CredentialsService } from './credentials.service';
 import { Credential } from './entities/credential.entity';
 import { AuthGuard } from '../auth/auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 describe('CredentialsController', () => {
   let controller: CredentialsController;
@@ -16,6 +17,12 @@ describe('CredentialsController', () => {
         {
           provide: getRepositoryToken(Credential),
           useValue: {},
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn(),
+          },
         },
       ],
     })

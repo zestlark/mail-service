@@ -11,9 +11,13 @@ import { User } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { AUTH_CONSTANTS } from './auth.constants';
-import { getCookieOptions } from './auth.utils';
+import {
+  getCookieOptions,
+  ACCESS_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+} from './auth.utils';
 import * as bcrypt from 'bcrypt';
+import { ENV_KEYS } from '../config/env.keys';
 
 @Injectable()
 export class AuthService {
@@ -46,9 +50,10 @@ export class AuthService {
     const emailToken = await this.jwtService.signAsync(
       { sub: savedUser.id },
       {
-        secret: this.configService.get<string>('JWT_EMAIL_SECRET'),
-        expiresIn: (this.configService.get<string>('JWT_EMAIL_EXPIRATION') ||
-          AUTH_CONSTANTS.DEFAULT_EMAIL_EXPIRATION) as unknown as number,
+        secret: this.configService.get<string>(ENV_KEYS.JWT_EMAIL_SECRET),
+        expiresIn: this.configService.get<string>(
+          ENV_KEYS.JWT_EMAIL_EXPIRATION,
+        ) as unknown as number,
       },
     );
 
@@ -71,17 +76,18 @@ export class AuthService {
     const payload = { sub: userId, email, name };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: (this.configService.get<string>('JWT_ACCESS_EXPIRATION') ||
-          AUTH_CONSTANTS.DEFAULT_ACCESS_EXPIRATION) as unknown as number,
+        secret: this.configService.get<string>(ENV_KEYS.JWT_ACCESS_SECRET),
+        expiresIn: this.configService.get<string>(
+          ENV_KEYS.JWT_ACCESS_EXPIRATION,
+        ) as unknown as number,
       }),
       this.jwtService.signAsync(
         { sub: userId },
         {
-          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-          expiresIn: (this.configService.get<string>(
-            'JWT_REFRESH_EXPIRATION',
-          ) || AUTH_CONSTANTS.DEFAULT_REFRESH_EXPIRATION) as unknown as number,
+          secret: this.configService.get<string>(ENV_KEYS.JWT_REFRESH_SECRET),
+          expiresIn: this.configService.get<string>(
+            ENV_KEYS.JWT_REFRESH_EXPIRATION,
+          ) as unknown as number,
         },
       ),
     ]);
@@ -90,14 +96,14 @@ export class AuthService {
 
   setCookies(res: Response, accessToken: string, refreshToken: string) {
     res.cookie(
-      AUTH_CONSTANTS.ACCESS_COOKIE_NAME,
+      ACCESS_COOKIE_NAME,
       accessToken,
-      getCookieOptions('access'),
+      getCookieOptions('access', this.configService),
     );
     res.cookie(
-      AUTH_CONSTANTS.REFRESH_COOKIE_NAME,
+      REFRESH_COOKIE_NAME,
       refreshToken,
-      getCookieOptions('refresh'),
+      getCookieOptions('refresh', this.configService),
     );
   }
 
@@ -144,12 +150,12 @@ export class AuthService {
 
   logout(response: Response) {
     response.clearCookie(
-      AUTH_CONSTANTS.ACCESS_COOKIE_NAME,
-      getCookieOptions('access'),
+      ACCESS_COOKIE_NAME,
+      getCookieOptions('access', this.configService),
     );
     response.clearCookie(
-      AUTH_CONSTANTS.REFRESH_COOKIE_NAME,
-      getCookieOptions('refresh'),
+      REFRESH_COOKIE_NAME,
+      getCookieOptions('refresh', this.configService),
     );
     return {
       message: 'Logout successful',
