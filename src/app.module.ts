@@ -18,6 +18,8 @@ import { MailModule } from './mail/mail.module';
 import { validateEnv } from './config/env.validation';
 import { ENV_KEYS } from './config/env.keys';
 import { LoggerMiddleware } from './middleware/logger.middleware';
+import { typeOrmAsyncConfig } from './config/typeorm.config';
+import { jwtAsyncConfig } from './config/jwt.config';
 
 @Module({
   imports: [
@@ -25,25 +27,8 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
       isGlobal: true,
       validate: validateEnv,
     }),
-    TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: 'database.db',
-      entities: [User, Credential, Template, MailLog],
-      synchronize: true,
-    }),
-    JwtModule.registerAsync({
-      global: true,
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>(ENV_KEYS.JWT_ACCESS_SECRET),
-        signOptions: {
-          expiresIn: configService.get<string>(
-            ENV_KEYS.JWT_ACCESS_EXPIRATION,
-          ) as unknown as number,
-        },
-      }),
-      inject: [ConfigService],
-    }),
+    TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
+    JwtModule.registerAsync(jwtAsyncConfig),
     AuthModule,
     UsersModule,
     TemplatesModule,

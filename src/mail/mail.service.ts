@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MailLog } from './entities/mail-log.entity';
 import { Template } from '../templates/entities/template.entity';
 import { Credential } from '../credentials/entities/credential.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { CreateMailLogDto } from './dto/create-mail-log.dto';
 import { UpdateMailLogDto } from './dto/update-mail-log.dto';
 import { SendMailDto } from './dto/send-mail.dto';
@@ -26,6 +26,7 @@ export class MailService {
     @InjectRepository(Credential)
     private readonly credRepo: Repository<Credential>,
     private readonly configService: ConfigService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async sendEmail(userId: number, sendMailDto: SendMailDto) {
@@ -52,7 +53,7 @@ export class MailService {
         );
       }
       const missingVars = template.templateVariables.filter(
-        (v) => !variables[v.trim()],
+        (v) => variables[v.trim()] === undefined || variables[v.trim()] === null,
       );
       if (missingVars.length > 0) {
         throw new BadRequestException(
@@ -66,8 +67,8 @@ export class MailService {
       for (const [key, value] of Object.entries(variables)) {
         const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         finalBody = finalBody.replace(
-          new RegExp(String.raw`{{\s*${escapedKey}\s*}}`, 'g'),
-          value,
+          new RegExp(String.raw`{{\s*${escapedKey}\s*}}`, 'gi'),
+          String(value),
         );
       }
     }
@@ -85,6 +86,30 @@ export class MailService {
       },
     });
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    let mailLog: MailLog;
+    try {
+      mailLog = queryRunner.manager.create(MailLog, {
+        userId,
+        templateId,
+        credsId: cred.id,
+        to: Array.isArray(to) ? to.join(', ') : to,
+        subject: template.templateSubject,
+        body: finalBody,
+        status: 'pending',
+      });
+      mailLog = await queryRunner.manager.save(mailLog);
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException('Failed to initialize mail log');
+    } finally {
+      await queryRunner.release();
+    }
+
     let status = 'success';
     let errorMessage = null;
 
@@ -98,19 +123,13 @@ export class MailService {
     } catch (error) {
       status = 'failed';
       errorMessage = error.message;
+    } finally {
+      transporter.close();
     }
 
-    const mailLog = this.mailLogRepo.create({
-      userId,
-      templateId,
-      credsId: cred.id,
-      to: Array.isArray(to) ? to.join(', ') : to,
-      subject: template.templateSubject,
-      body: finalBody,
-      status,
-      errorMessage,
-      sentAt: status === 'success' ? new Date() : null,
-    });
+    mailLog.status = status;
+    mailLog.errorMessage = errorMessage;
+    mailLog.sentAt = status === 'success' ? new Date() : null;
     await this.mailLogRepo.save(mailLog);
 
     if (status === 'failed') {

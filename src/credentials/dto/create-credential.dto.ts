@@ -2,7 +2,7 @@ import { IsInt, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Credential } from '../entities/credential.entity';
 
-export class CreateCredentialDto implements Omit<Credential, 'id' | 'userId'> {
+export class CreateCredentialDto implements Pick<Credential, 'host' | 'port' | 'username' | 'password'> {
   @IsString()
   host: string;
 
