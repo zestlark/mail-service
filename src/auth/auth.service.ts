@@ -61,10 +61,13 @@ export class AuthService {
     await this.userRepo.save(savedUser);
 
     return {
-      id: savedUser.id,
-      name: savedUser.name,
-      email: savedUser.email,
-      emailToken: savedUser.emailToken,
+      message: 'Registration successful',
+      user: {
+        id: savedUser.id,
+        name: savedUser.name,
+        email: savedUser.email,
+        emailToken: savedUser.emailToken,
+      },
     };
   }
 
